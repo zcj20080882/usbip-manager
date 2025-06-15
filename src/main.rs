@@ -1,8 +1,12 @@
+mod usbipd;
+
+
 use tracing_subscriber::fmt::{self};
 use tracing_subscriber::layer::SubscriberExt;
 use std::io::stdout;
 use std::fs::OpenOptions;
 use tracing::{info, warn, error, debug, trace};
+use usbipd::{USBIPDError, UsbDevice, commands, runner};
 
 
 fn init_log() {
@@ -41,15 +45,47 @@ fn init_log() {
         .with(console_layer);
 
     tracing::subscriber::set_global_default(subscriber).expect("设置 subscriber 失败");
-
-    info!("This is an info message.");
-    warn!("This is a warning message.");
-
-    error!("This is an error message.");
-    debug!("This is a debug message.");
-    trace!("This is a trace message.");
 }
 
-fn main() {
+#[tokio::main]
+async fn main()  {
     init_log();
+    let devices = commands::get_all_devices().await;
+    match devices {
+        Ok(devices) => {
+            info!("Found {} USB devices:", devices.len());
+            for device in devices {
+                info!("{:?}", device);
+            }
+        },
+        Err(e) => {
+            error!("Error retrieving USB devices: {}", e);
+        }
+    }
+    let bind_result = commands::bind_device("0403:6001", false).await;
+    match bind_result {
+        Ok(success) => {
+            if success {
+                info!("Device bound successfully.");
+            } else {
+                warn!("Device binding was not successful.");
+            }
+        },
+        Err(e) => {
+            error!("Error binding device: {}", e);
+        }
+    }
+    let unbind_result = commands::unbind_device(Some("0403:6001")).await;
+    match unbind_result {
+        Ok(success) => {
+            if success {
+                info!("Device unbound successfully.");
+            } else {
+                warn!("Device unbinding was not successful.");
+            }
+        },
+        Err(e) => {
+            error!("Error unbinding device: {}", e);
+        }
+    }
 }
