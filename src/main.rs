@@ -2,13 +2,15 @@
 
 #[allow(unused_imports)]
 use tracing::{info, warn, error, debug, trace};
-#[allow(unused_imports)]
-use usbipd::{USBIPD, UsbDevice, commands, runner};
+
+slint::include_modules!();
 
 mod log;
 mod usbipd;
 
-fn main()  {
+fn main() -> Result<(), slint::PlatformError> {
     log::init_log();
-
+    let ui = MainView::new()?;
+    let ui_handle = ui.as_weak();
+    ui.run()
 }

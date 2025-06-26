@@ -1,0 +1,16 @@
+import { SButton } from "./modules/surrealism-ui/index.slint";
+
+export component MainView inherits Window{
+    height: 600px;
+    width: 800px;
+    title: @tr("USBIP Manager");
+    icon: @image-url("asserts/logo.png");
+    VerticalLayout {
+        Rectangle {
+            SButton {
+            theme:Dark;
+            text: "Click Me!";
+            }
+        }
+    }
+}
